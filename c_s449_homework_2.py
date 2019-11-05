@@ -63,8 +63,8 @@ for i, j in enumerate(np.unique(y_set)):
     plt.scatter(X_set[y_set == j, 0], X_set[y_set == j, 1],
                 c=ListedColormap(('red', 'green'))(i), label=j)
 plt.title('Logistic Regression (Training set)')
-plt.xlabel('Age')
-plt.ylabel('Estimated Salary')
+plt.xlabel('Pixel Values')
+plt.ylabel('Skin')
 plt.legend()
 plt.show()
 
@@ -76,6 +76,7 @@ def readpickle(filename):
 
 
 data = readpickle('data.pkl')
+print(data)
 
 def getFold(i):
     fold = data['fold' + str(i + 1)]
@@ -100,6 +101,6 @@ header += "\n\t________________________"
 
 print(header)
 
-for i in range(5):
-    print(getFold(i))
-    print('\n')
+#for i in range(5):
+   # print(getFold(i))
+   # print('\n')
