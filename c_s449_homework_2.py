@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+import pickle
 
 path = './Skin_NonSkin.txt'
 if not os.path.exists(path):
@@ -45,6 +46,7 @@ prediction = classifier.predict(inputTest)
 # Make the confusion matrix
 # Used for indicated correct preedictions
 from sklearn.metrics import confusion_matrix
+
 confusionMatrix = confusion_matrix(outputTest, prediction)
 
 # Visualising the Training set results
@@ -66,37 +68,6 @@ plt.ylabel('Estimated Salary')
 plt.legend()
 plt.show()
 
-print(inputTrain)
-print(outputTrain)
-
-# 5 Fold Split
-# First merge xtrain and ytrain so that we can easily divide into 5 chunks
-data = np.concatenate([inputTrain,outputTrain],axis = 1)
-
-# Divide our data to 5 chunks
-chunks = np.split(data, 5)
-
-datadict = {'fold1': {'train': {'x': None, 'y': None}, 'val': {'x': None, 'y': None}, 'test': {'x': xtest, 'y': ytest}},
-            'fold2': {'train': {'x': None, 'y': None}, 'val': {'x': None, 'y': None}, 'test': {'x': xtest, 'y': ytest}},
-            'fold3': {'train': {'x': None, 'y': None}, 'val': {'x': None, 'y': None}, 'test': {'x': xtest, 'y': ytest}},
-            'fold4': {'train': {'x': None, 'y': None}, 'val': {'x': None, 'y': None}, 'test': {'x': xtest, 'y': ytest}},
-            'fold5': {'train': {'x': None, 'y': None}, 'val': {'x': None, 'y': None},
-                      'test': {'x': xtest, 'y': ytest}}, }
-
-for i in range(5):
-    datadict['fold' + str(i + 1)]['val']['x'] = chunks[i][:, 0:3]
-    datadict['fold' + str(i + 1)]['val']['y'] = chunks[i][:, 3:4]
-
-    idx = list(set(range(5)) - set([i]))
-    X = np.concatenate(itemgetter(*idx)(chunks), 0)
-    datadict['fold' + str(i + 1)]['train']['x'] = X[:, 0:3]
-    datadict['fold' + str(i + 1)]['train']['y'] = X[:, 3:4]
-
-
-def writepickle(data, filename):
-    with open(filename, 'wb') as f:
-        pickle.dump(data, f)
-
 
 def readpickle(filename):
     with open(filename, 'rb') as f:
@@ -104,7 +75,31 @@ def readpickle(filename):
     return data
 
 
-writepickle(datadict, 'data.pkl')
+data = readpickle('data.pkl')
 
-print(datadict)
+def getFold(i):
+    fold = data['fold' + str(i + 1)]
+    fold_train = fold['train']
+    fold_val = fold['val']
+    fold_test = fold['test']
 
+    xtrain, ytrain = fold_train['x'], fold_train['y']
+    xval, yval = fold_val['x'], fold_val['y']
+    xtest, ytest = fold_test['x'], fold_test['y']
+
+    train = xtrain.shape, ytrain.shape
+    val = xval.shape, yval.shape
+    test = xtest.shape, ytest.shape
+
+    return val, test
+
+header = '\n\t________________________'
+header += '\n\t\t|  ACCURACY'
+header += "\n\tFOLD | VAL | TEST"
+header += "\n\t________________________"
+
+print(header)
+
+for i in range(5):
+    print(getFold(i))
+    print('\n')
